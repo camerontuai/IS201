@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Anime Trivia Game</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      /* Fun anime-themed background image with fallback gradient */
+      background: url('assets/img/anime_background.png') center/cover no-repeat,
+                  linear-gradient(135deg, #1f1c2c, #928dab);
+      color: #f5f5dc;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      text-align: center;
+    }
+    header {
+      margin-bottom: 2rem;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 2.5rem;
+      color: #e0c097;
+      text-shadow: 1px 1px 4px rgba(0,0,0,0.7);
+    }
+    #trivia-box {
+      background: rgba(0,0,0,0.5);
+      padding: 2rem;
+      border-radius: 1rem;
+      max-width: 600px;
+      width: 90%;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.7);
+    }
+    .question {
+      font-size: 1.3rem;
+      margin-bottom: 1rem;
+    }
+    .options {
+      list-style: none;
+      padding: 0;
+      text-align: left;
+      margin-bottom: 1rem;
+    }
+    .options li {
+      margin: 0.5rem 0;
+    }
+    .options input {
+      margin-right: 0.5rem;
+    }
+    #feedback {
+      font-size: 1.2rem;
+      margin-top: 1rem;
+      display: none;
+      font-style: italic;
+      color: #d4af7f;
+    }
+    button {
+      background: #e0c097;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      margin: 0.5rem;
+      border-radius: 2rem;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: transform 0.2s, background 0.2s;
+    }
+    button:hover {
+      transform: scale(1.05);
+      background: #f5e1b2;
+    }
+    button:active {
+      transform: scale(0.95);
+    }
+    .confetti {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      background: #f5e1b2;
+      opacity: 0.8;
+      animation: fall 2s ease-out forwards;
+    }
+    @keyframes fall {
+      0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(300px) rotate(360deg); opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Anime Trivia Game</h1>
+  </header>
+  <div id="trivia-box">
+    <div id="question" class="question">Click "Start Quiz" to begin!</div>
+    <ul id="options" class="options"></ul>
+    <button id="submit-btn">Start Quiz</button>
+    <div id="feedback"></div>
+  </div>
+
+  <script>
+    const trivia = [
+      {
+        q: "What is the Philosopher's Stone used for in Fullmetal Alchemist: Brotherhood?",
+        options: [
+          "To restore lost limbs",
+          "To revive the dead",
+          "To grant unlimited power",
+          "To create gold"
+        ],
+        answer: 1
+      },
+      {
+        q: "In Jujutsu Kaisen, what is Yuji's cursed technique?",
+        options: [
+          "Black Flash",
+          "Domain Expansion",
+          "Reversed Cursed Technique",
+          "None (uses physical prowess)"
+        ],
+        answer: 3
+      },
+      {
+        q: "What is Naruto's signature jutsu?",
+        options: [
+          "Chidori",
+          "Rasengan",
+          "Amaterasu",
+          "Gentle Fist"
+        ],
+        answer: 1
+      }
+    ];
+
+    let currentIndex = 0;
+    const questionEl = document.getElementById('question');
+    const optionsEl = document.getElementById('options');
+    const submitBtn = document.getElementById('submit-btn');
+    const feedbackEl = document.getElementById('feedback');
+
+    function setupQuestion() {
+      const item = trivia[currentIndex];
+      questionEl.textContent = item.q;
+      optionsEl.innerHTML = '';
+      feedbackEl.style.display = 'none';
+      item.options.forEach((opt, idx) => {
+        const li = document.createElement('li');
+        li.innerHTML = `<label><input type="radio" name="option" value="${idx}">${opt}</label>`;
+        optionsEl.appendChild(li);
+      });
+      submitBtn.textContent = 'Submit Answer';
+    }
+
+    function showFeedback(isCorrect) {
+      feedbackEl.style.display = 'block';
+      feedbackEl.textContent = isCorrect ? 'Correct! 🎉' : `Wrong! The correct answer is: ${trivia[currentIndex].options[trivia[currentIndex].answer]}`;
+      createConfetti();
+      submitBtn.textContent = 'Next Question';
+    }
+
+    function randomizeOrder() {
+      trivia.sort(() => Math.random() - 0.5);
+    }
+
+    function createConfetti() {
+      for (let i = 0; i < 15; i++) {
+        const conf = document.createElement('div');
+        conf.classList.add('confetti');
+        conf.style.left = Math.random() * window.innerWidth + 'px';
+        conf.style.background = `hsl(${Math.random()*360}, 70%, 80%)`;
+        document.body.appendChild(conf);
+        setTimeout(() => conf.remove(), 2000);
+      }
+    }
+
+    submitBtn.addEventListener('click', () => {
+      if (submitBtn.textContent === 'Start Quiz') {
+        randomizeOrder();
+        setupQuestion();
+      } else if (submitBtn.textContent === 'Submit Answer') {
+        const selected = document.querySelector('input[name="option"]:checked');
+        if (!selected) return;
+        const isCorrect = parseInt(selected.value) === trivia[currentIndex].answer;
+        showFeedback(isCorrect);
+      } else {
+        currentIndex++;
+        if (currentIndex < trivia.length) {
+          setupQuestion();
+        } else {
+          questionEl.textContent = 'Quiz Complete!';
+          optionsEl.innerHTML = '';
+          submitBtn.style.display = 'none';
+        }
+      }
+    });
+  </script>
+</body>
+</html>
